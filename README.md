@@ -10,6 +10,7 @@ You'll need the following files from this repository in your working folder:
 
 - `invert.py` - Inversion script
 - `ProPhotoLinear.icm` - ProPhoto RGB profile with linear gamma
+- `GrayLinear.icp` - Grayscale profile with linear gamma
 - `requirements.txt` - To resolve dependencies on install
 
 Run this in Command Prompt/Terminal to install dependencies:
@@ -46,21 +47,34 @@ Put the RAW files in the working folder, ensuring that they are in the following
 ## Inversion
 Navigate to the working folder in Command Prompt/Terminal and run
 ```
-python invert.py RAW_EXTENSION GAMMA
+python invert.py [--rawext RAWEXT] [--gamma GAMMA] [--halfsize]
+                 [--processraw] [--processbw] [--noautocrop] [--mp MP]
 ```
-`RAW_EXTENSION` specifies the RAW extension, e.g. `CR3`, `ARW`, or `NEF`.
+`rawext`   sets the RAW extension, e.g. `CR3`, `ARW`, or `NEF`, default `CR3`.
 
-`GAMMA` specifies the gamma correction factor. Use 1 as a default, and decrease it for more shadow detail. Use 0.01 for a log look.
+`gamma`   sets the gamma factor for the base curve. Use 1 as a default, and decrease it for more shadow detail. Use 0.01 for a log look.
+
+`halfsize` imports the RAW at half-size in both dimensions. Useful for speed.
+
+`processraw` bypasses color transform on imports and inverts in camera-native RGB space.
+
+`processbw` imports in camera-native RGB space and inverts in grayscale.
+
+`noautocrop` disables autocropping based on the flat-field image
+
+`mp` sets the megapixels the output should be downscaled to. Defaults to no-scaling. Does not upscale.
 
 The code then does the following:
 1. Imports flat-field correction file
 2. Imports half-exposed leader file
-3. Calculates the exposed density and base density (with flat-field correction)
-4. Imports negative frame
-5. Calculates the density of the negative frame (with flat-field correction)
-6. Scales the density to [0,1] for each RGB channels corresponding to the base and exposed density respectively
-7. Applies gamma correction using the user-specified gamma correction factor
-8. Exports file to a 16-bit linear tiff and attaches a linear profile
+3. Crops images to the bright region in the flat-field image (if enabled)
+4. Converts from camera-native RGB to ProPhoto RGB colorspace or monochrome (if enabled)
+5. Calculates the exposed density and base density (with flat-field correction)
+6. Imports negative frame, converting to the appropriate colorspace
+7. Calculates the density of the negative frame (with flat-field correction)
+8. Scales the density to [0,1] corresponding to the base and exposed density respectively for each RGB channel 
+9. Applies base curve using the user-specified gamma
+10. Exports file to a 16-bit linear tiff and attaches a linear profile
 
 ## Gamma examples
 ### Gamma = 0.01 (equivalent to log)
