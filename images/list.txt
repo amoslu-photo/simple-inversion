@@ -1,7 +1,0 @@
-Flat-field.jpg
-Half-exposed.jpg
-Negative_scan.jpg
-Gamma0.01.jpg
-Gamma0.5.jpg
-Gamma1.jpg
-Gamma2.jpg

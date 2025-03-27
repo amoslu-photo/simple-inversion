@@ -1,3 +1,4 @@
 rawpy
 numpy
 tifffile
+opencv-python
