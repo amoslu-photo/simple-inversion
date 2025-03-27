@@ -88,3 +88,26 @@ The code then does the following:
 
 ### Gamma = 2.0 (darker shadows)
 ![Gamma 2](images/Gamma2.jpg)
+
+## FAQ
+
+### Why did you develop this?
+
+I was getting really frustrated with fighting with tone curves that are added on lab scans and on commercial software like Silverfast or Epson Scan. I recently moved to scanning with my mirrorless camera and I wanted a way to get my negative scans quickly into Lightroom while preserving all the underlying information. In addition, I felt that a lot of the commercial tools seemed rather opaque in ther internal processes, and I wanted to use this as an exercise to understand film and digital imaging technology more deeply.
+
+### Why are the output images so dark?
+
+The tool outputs in linear TIFF for both color and monochrome workflows. It embeds a linear profile into the TIFF. If you open it in a tool that doesn't support the embedded color profiles, it will interpret it in the sRGB color space with gamma = 2.2, which ends up being really dark. It should appear normal when imported into a tool with proper color management, like Photoshop or Lightroom.
+
+### Why a command line tool?
+
+I wanted this tool to be optimized for batch processing, with zero user interaction on each individual image at the point of inversion. The intent is for the output images to have maximum flexibility and to have the user only manipulate their images downstream using a Lightroom/Darktable/Photoshop style workflow. 
+
+## To-do
+
+- Multi-roll batch processing (already done, but only tested on mac)
+- D-min, D-max estimation from two images (rather than one half-burned image)
+- D-max estimation from some high-percentile region across all scans (rather than the leader)
+- More principled take on inversion color-space (i.e. reducing cross-talk in dye density estimation)
+- More principled take on output color-space (maybe from film spectral sensitivities)
+- Alternatively, calibration workflow to profile color checker under flash. 
