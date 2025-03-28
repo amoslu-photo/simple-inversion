@@ -1,7 +1,9 @@
 # simple-inversion
 
 ## Introduction
-This is a quick script to invert color negatives from camera scan RAW files. It obtains white and black points from a half-exposed leader, performs flat-field correction, applies a gamma correction curve, and batch processes all RAW files within the working directory. The key intent is to automate the inversion process completely, while preserving all the information in the negative for downstream work in Lightroom, Darktable, or your photo editor of choice. 
+This is a python-based command line tool to invert color negatives from camera scan RAW files. It obtains white and black points from a half-exposed leader, performs flat-field correction, applies a gamma correction curve, and batch processes all RAW files within the working directory. The key intent is to automate the inversion process completely, while preserving all information in the negative for downstream work in Lightroom, Darktable, or your photo editor of choice. As such, the tool does not have any interface to correct white balance, adjust saturation, or interactively manipulate the image in any way. All such interactions should be done in a downstream tool you are already famillar with for digital photography.
+
+**WARNING: I'm actively developing this right now. Expect a myriad of bugs and a lack of stability.**
 
 ## Setup
 Download and install [Python](https://www.python.org/downloads/)
@@ -19,7 +21,10 @@ pip install -r requirements.txt
 ```
 ## Camera Scanning
 ### General settings
-Capture all your images with the camera set to "**manual**", at the **lowest native ISO** (typically ISO 100), at the **sharpest aperture** for the lens (typically f/8), and at a **constant shutter speed**. 
+Capture all your images with the camera set to "**manual**", at the **lowest native ISO** (typically ISO 100), at the **sharpest aperture** for the lens (typically f/8), and at a **constant shutter speed**.
+
+**It is critical that you do not adjust your camera settings and your light source while scanning the roll. The flat-field corrections and density calculations expects all images to be captured under identical settings and registration.**
+
 
 ### Flat-field correction
 Capture an image of the light source with no film in the holder. Adjust your shutter speed to the longest setting without overexposing any part of the image. You can use the highlight warning feature on most cameras to verify this. Use this shutter speed for all images in the batch.
@@ -56,11 +61,11 @@ python invert.py [--rawext RAWEXT] [--gamma GAMMA] [--halfsize]
 
 `halfsize` imports the RAW at half-size in both dimensions. Useful for speed.
 
-`processraw` bypasses color transform on imports and inverts in camera-native RGB space.
+`processraw` bypasses the color transform and inverts in camera-native RGB space. Use this for narrowband RGB light sources.
 
-`processbw` imports in camera-native RGB space and inverts in grayscale.
+`processbw` converts the RAW RGB values to grayscale before inversion.
 
-`noautocrop` disables autocropping based on the flat-field image
+`noautocrop` disables autocropping based on the flat-field image.
 
 `mp` sets the megapixels the output should be downscaled to. Defaults to no-scaling. Does not upscale.
 
