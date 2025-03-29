@@ -128,7 +128,7 @@ I have developed an in-silico model that simulates the forward scanning process 
 
 I'll write something more formal up soon, and attach the python calculations when I've had the time to clean up my prototype spaghetti code. I'm not likely to add something to the inversion process to implement this though. Feels a little bit beyond scope, and I think that a full input-output profiling is principled, empirical, and doesn't require any spectrometry. 
 
-Model Inputs (Camera spectra variability, LED spectra, and dye spectra)
+Model Inputs ([Camera spectra variability](https://www.gujinwei.org/research/camspec/db.html), [LED spectra](https://zeiss-campus.magnet.fsu.edu/articles/lightsources/leds.html), and [dye spectra](https://www.kodak.com/content/products-brochures/Film/VISION3_50D_5203_TI-2657_Technical-Data_EN.pdf))
 ![Scanning Model Inputs](images/scanningmodelinputs.png)
 
 Model Outputs (Take the integral of the i,jth curve to get the i,jth element of the 3x3 matrix A, where [RGB sensor intensity] = A [CMY dye density]
