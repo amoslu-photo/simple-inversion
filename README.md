@@ -111,15 +111,17 @@ I wanted this tool to be optimized for batch processing, with zero user interact
 ## To-do
 ### Multi-roll batch processing 
 This processes all folders in the working directory, treating all files within a folder as being from a single roll. Code already developed for mac, but I'm delaying this until I get my hands on a windows machine to make sure I didn't mess something up with pathlib. 
+
 ### D-min and D-max estimation from two separate images
 Current workflow estimates D-min and D-max from a single half-burned image of the leader. Sometimes, this might not be possible because of a twin-check sticker obscuring the exposed region. Really easy to do, but I'm working on the below item first.
+
 ### D-max estimation from some bright region across all scans (rather than the leader)
 Did some empirical testing on this, and I'm trying to clean this up. With the burned leader approach, I have a guarantee that the leader is both at D-max and I lose nothing throwing out anything above it. I also have a guarantee that it is pure white because of gross overexposure. With the bright regions in the scan, these are not guaranteed, especially if the sun or practicals are not in the frame. 
 
 Current approach I'm testing is to calculate four d-max - three for RGB and one for the pixel sum. RGB maxes are used to calculate the point to start discarding info. Pixel sum is used to ensure that the scaling maintains white. The d-max is computed from the 99th percentile to reject dust.
 
 ### More principled take on inversion color-space (i.e. reducing cross-talk in dye density estimation)
-Currently I handwave this whole thing away wtih converting this to ProPhoto space and inverting there. Works decently well, but I'd really want something more principled rather than picking a color space ad-hoc. The ad-hoc approach just feels like a overly complicated saturation dial, which could have been done by multipling some matrices with negative off-diagonals as nothing is technically color managed. Need to spend more time looking into the science here. 
+Currently I handwave this whole thing away with converting this to ProPhoto space and inverting there. Works decently well, but I'd really want something more principled rather than picking a color space ad-hoc. The ad-hoc approach just feels like a overly complicated saturation dial, which could have been done by multipling some matrices with negative off-diagonals as nothing is technically color managed. Need to spend more time looking into the science here. 
 
 ### Light source handling
 I have developed an in-silico model that simulates the forward scanning process and the inverse dye density estimation process, across multiple camera sensors (in a database), light sources (narrowband RGB and broadband whites), and with dye spectra estimated from the Kodak 50D datasheet. Preliminary results show that single-shot RGB light sources may yield more saturated outputs than white light, but are more sensitive to camera sensor differences under a universal calibration profile. 3-shot RGB scanning gets rid of this, but brings an O(n) cost rather than the O(1) cost of calibration. 
