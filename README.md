@@ -55,7 +55,7 @@ Navigate to the working folder in Command Prompt/Terminal and run
 python invert.py [--rawext RAWEXT] [--gamma GAMMA] [--halfsize]
                  [--processraw] [--processbw] [--noautocrop] [--mp MP]
 ```
-`rawext`   sets the RAW extension, e.g. `CR3`, `ARW`, or `NEF`, default `CR3`.
+`rawext`   sets the RAW extension to search for, e.g. `CR3`, `ARW`, `NEF`, etc. Defaults to `CR3`.
 
 `gamma`   sets the gamma factor for the base curve. Use 1 as a default, and decrease it for more shadow detail. Use 0.01 for a log look.
 
@@ -98,7 +98,7 @@ The code then does the following:
 
 ### Why did you develop this?
 
-I was getting really frustrated with fighting with tone curves that are added on lab scans and on commercial software like Silverfast or Epson Scan. I recently moved to scanning with my mirrorless camera and I wanted a way to get my negative scans quickly into Lightroom while preserving all the underlying information. In addition, I felt that a lot of the commercial tools seemed rather opaque in ther internal processes, and I wanted to use this as an exercise to understand film and digital imaging technology more deeply.
+I was getting really frustrated with fighting with tone curves that are added on lab scans and on commercial software like Silverfast or Epson Scan. I recently moved to scanning with my mirrorless camera and I wanted a way to get my negative scans quickly into Lightroom while preserving all the underlying information. In addition, I felt that a lot of the commercial tools seemed rather opaque in ther internal processes, and I wanted to use this as an exercise to understand film and digital imaging technology more deeply. Lastly, I wanted to use this as an opportunity to contribute to the film community in my own little way.
 
 ### Why are the output images so dark?
 
@@ -109,10 +109,31 @@ The tool outputs in linear TIFF for both color and monochrome workflows. It embe
 I wanted this tool to be optimized for batch processing, with zero user interaction on each individual image at the point of inversion. The intent is for the output images to have maximum flexibility and to have the user only manipulate their images downstream using a Lightroom/Darktable/Photoshop style workflow. 
 
 ## To-do
+### Multi-roll batch processing 
+This processes all folders in the working directory, treating all files within a folder as being from a single roll. Code already developed for mac, but I'm delaying this until I get my hands on a windows machine to make sure I didn't mess something up with pathlib. 
+### D-min and D-max estimation from two separate images
+Current workflow estimates D-min and D-max from a single half-burned image of the leader. Sometimes, this might not be possible because of a twin-check sticker obscuring the exposed region. Really easy to do, but I'm working on the below item first.
+### D-max estimation from some bright region across all scans (rather than the leader)
+Did some empirical testing on this, and I'm trying to clean this up. With the burned leader approach, I have a guarantee that the leader is both at D-max and I lose nothing throwing out anything above it. I also have a guarantee that it is pure white because of gross overexposure. With the bright regions in the scan, these are not guaranteed, especially if the sun or practicals are not in the frame. 
 
-- Multi-roll batch processing (already done, but only tested on mac)
-- D-min, D-max estimation from two images (rather than one half-burned image)
-- D-max estimation from some high-percentile region across all scans (rather than the leader)
-- More principled take on inversion color-space (i.e. reducing cross-talk in dye density estimation)
-- More principled take on output color-space (maybe from film spectral sensitivities)
-- Alternatively, calibration workflow to profile color checker under flash. 
+Current approach I'm testing is to calculate four d-max - three for RGB and one for the pixel sum. RGB maxes are used to calculate the point to start discarding info. Pixel sum is used to ensure that the scaling maintains white. The d-max is computed from the 99th percentile to reject dust.
+
+### More principled take on inversion color-space (i.e. reducing cross-talk in dye density estimation)
+Currently I handwave this whole thing away wtih converting this to ProPhoto space and inverting there. Works decently well, but I'd really want something more principled rather than picking a color space ad-hoc. The ad-hoc approach just feels like a overly complicated saturation dial, which could have been done by multipling some matrices with negative off-diagonals as nothing is technically color managed. Need to spend more time looking into the science here. 
+
+### Light source handling
+I have developed an in-silico model that simulates the forward scanning process and the inverse dye density estimation process, across multiple camera sensors (in a database), light sources (narrowband RGB and broadband whites), and with dye spectra estimated from the Kodak 50D datasheet. Preliminary results show that single-shot RGB light sources may yield more saturated outputs than white light, but are more sensitive to camera sensor differences under a universal calibration profile. 3-shot RGB scanning gets rid of this, but brings an O(n) cost rather than the O(1) cost of calibration. 
+
+I'll write something more formal up soon, and attach the python calculations when I've had the time to clean up my prototype spaghetti code. I'm not likely to add something to the inversion process to implement this though. Feels a little bit beyond scope, and I think that a full input-output profiling is principled, empirical, and doesn't require any spectrometry. 
+
+Model Inputs (Camera spectra variability, LED spectra, and dye spectra)
+![Scanning Model Inputs](images/scanningmodelinputs.png)
+
+Model Outputs (Take the integral of the i,jth curve to get the i,jth element of the 3x3 matrix A, where [RGB sensor intensity] = A [CMY dye density]
+![Scanning Model Outputs](images/scanningmodeloutputs.png)
+
+### More principled take on output color-space (maybe from film spectral sensitivities)
+Even lower priority. I suspect interlayer DIR couplers, used to boost stauration, are going to make this nonlinear. Prior work may be proprietary too, but I'll see what I can dig up before I rule this out entirely.
+
+### Calibration workflow to profile color checker under direct flash
+This would be a straightforward way to profile the lightsource-film-camera combo. It will likely get rid of all the ad hoc inversion colorspace shift, as I can just estimate a matrix transform that gets me all the way to the end. I don't know how robust this may be to density shifts and crossover issues due to substandard development, but it's definitely a whole lot more principled than any other approach here. 
